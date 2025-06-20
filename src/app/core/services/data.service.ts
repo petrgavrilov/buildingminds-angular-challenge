@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {
-  private readonly http: HttpClient = inject(HttpClient);
+  private http: HttpClient = inject(HttpClient);
 
   getBuildings(): Observable<Building[]> {
     return this.http.get<Building[]>('/api/buildings');

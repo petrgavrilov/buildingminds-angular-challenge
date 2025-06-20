@@ -11,7 +11,7 @@ import { TagModule } from 'primeng/tag';
   imports: [TagModule, TagsSkeletonComponent],
 })
 export class TagsComponent {
-  private readonly tagsService = inject(TagsService);
+  private tagsService = inject(TagsService);
 
   public tags: Signal<string[]> = this.tagsService.getTagsList();
   public selectedTags: Signal<Set<string>> = this.tagsService.getSelectedTagsSet();

@@ -35,7 +35,7 @@ const LIMIT_STEP = 50;
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BuildingsComponent {
-  private readonly buildingsService = inject(BuildingsService);
+  private buildingsService = inject(BuildingsService);
 
   public buildingTypes: Signal<string[]> = this.buildingsService.getBuildingTypes();
   public buildingType: WritableSignal<string | null> = this.buildingsService.getBuildingType();
