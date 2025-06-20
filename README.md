@@ -4,6 +4,10 @@
 
 Create a web app in Angular with two pages: `/buildings` and `/sites`, each displaying data with contextual and global tag filters. The app supports localStorage-based state persistence and lazy rendering for performance.
 
+## Live Demo
+
+https://buildingminds-angular-challenge.vercel.app/
+
 ## Architecture Overview
 
 - **Feature Modules**: `buildings`, `sites`, and `tags` each encapsulate related pages, components, services, and models.
@@ -100,7 +104,7 @@ npm start
 - Angular 19
 - Tailwind CSS + PrimeNG
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/app
