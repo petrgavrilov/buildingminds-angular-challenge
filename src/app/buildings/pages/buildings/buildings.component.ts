@@ -1,22 +1,22 @@
+import { SlicePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   inject,
   linkedSignal,
-  OnInit,
   Signal,
   WritableSignal,
 } from '@angular/core';
-import { SlicePipe } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
+import { BuildingsSkeletonComponent } from '@app/buildings/components/buildings-skeleton/buildings-skeleton.component';
+import { Building } from '@app/buildings/model/building.interface';
+import { BuildingsService } from '@app/buildings/services/buildings.service';
+import { LazyLoadTriggerComponent } from '@app/ui/components/lazy-load-trigger/lazy-load-trigger.component';
+import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { SelectModule } from 'primeng/select';
-import { FormsModule } from '@angular/forms';
-import { BuildingsService } from '../../services/buildings.service';
-import { Building } from '../../model/building.interface';
-import { LazyLoadTriggerComponent } from '../../../ui/components/lazy-load-trigger/lazy-load-trigger.component';
-import { BuildingsSkeletonComponent } from '../../components/buildings-skeleton/buildings-skeleton.component';
 
 const LIMIT_STEP = 50;
 
@@ -34,26 +34,23 @@ const LIMIT_STEP = 50;
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class BuildingsComponent implements OnInit {
+export class BuildingsComponent {
   private readonly buildingsService = inject(BuildingsService);
 
-  public buildingTypes: Signal<string[]> =
-    this.buildingsService.getBuildingTypes();
-  public buildingType: WritableSignal<string | null> =
-    this.buildingsService.getBuildingType();
-  public filteredBuildings: Signal<Building[]> =
-    this.buildingsService.getFilteredBuildings();
+  public buildingTypes: Signal<string[]> = this.buildingsService.getBuildingTypes();
+  public buildingType: WritableSignal<string | null> = this.buildingsService.getBuildingType();
+  public filteredBuildings: Signal<Building[]> = this.buildingsService.getFilteredBuildings();
   public totalRecords: Signal<number> = this.buildingsService.getTotalRecords();
-  public totalFiltered: Signal<number> = computed(
-    () => this.filteredBuildings().length
-  );
+  public totalFiltered: Signal<number> = computed(() => this.filteredBuildings().length);
   public currentLimit: WritableSignal<number> = linkedSignal({
     source: this.filteredBuildings,
     computation: () => LIMIT_STEP,
   });
 
-  public ngOnInit(): void {
-    this.buildingsService.loadBuildings();
+  constructor() {
+    if (this.totalRecords() === 0) {
+      this.buildingsService.loadBuildings().pipe(takeUntilDestroyed()).subscribe();
+    }
   }
 
   public increaseLimit(): void {

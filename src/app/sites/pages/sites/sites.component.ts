@@ -1,3 +1,4 @@
+import { SlicePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -5,17 +6,16 @@ import {
   inject,
   linkedSignal,
   Signal,
-  signal,
   WritableSignal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { SitesSkeletonComponent } from '@app/sites/components/sites-skeleton/sites-skeleton.component';
+import { SitesService } from '@app/sites/services/sites.service';
+import { LazyLoadTriggerComponent } from '@app/ui/components/lazy-load-trigger/lazy-load-trigger.component';
+import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { SelectModule } from 'primeng/select';
-import { SitesService } from '../../services/sites.service';
-import { SlicePipe } from '@angular/common';
-import { LazyLoadTriggerComponent } from '../../../ui/components/lazy-load-trigger/lazy-load-trigger.component';
-import { SitesSkeletonComponent } from '../../components/sites-skeleton/sites-skeleton.component';
 
 const LIMIT_STEP = 50;
 
@@ -37,20 +37,19 @@ export class SitesComponent {
   private sitesService = inject(SitesService);
 
   public siteTypes: Signal<string[]> = this.sitesService.getSiteTypes();
-  public siteType: WritableSignal<string | null> =
-    this.sitesService.getSiteType();
+  public siteType: WritableSignal<string | null> = this.sitesService.getSiteType();
   public filteredSites = this.sitesService.getFilteredSites();
   public totalRecords: Signal<number> = this.sitesService.getTotalRecords();
-  public totalFiltered: Signal<number> = computed(
-    () => this.filteredSites().length
-  );
+  public totalFiltered: Signal<number> = computed(() => this.filteredSites().length);
   public currentLimit: WritableSignal<number> = linkedSignal({
     source: this.filteredSites,
     computation: () => LIMIT_STEP,
   });
 
-  public ngOnInit(): void {
-    this.sitesService.loadSites();
+  constructor() {
+    if (this.totalRecords() === 0) {
+      this.sitesService.loadSites().pipe(takeUntilDestroyed()).subscribe();
+    }
   }
 
   public increaseLimit(): void {

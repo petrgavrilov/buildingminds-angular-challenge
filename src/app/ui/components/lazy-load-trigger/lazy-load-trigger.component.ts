@@ -2,7 +2,6 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  effect,
   ElementRef,
   inject,
   input,
@@ -18,9 +17,7 @@ import {
   template: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LazyLoadTriggerComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class LazyLoadTriggerComponent implements OnInit, AfterViewInit, OnDestroy {
   public shouldTrigger: InputSignal<boolean> = input<boolean>(true);
   public marginBottom: InputSignal<number> = input<number>(500);
 
@@ -30,13 +27,10 @@ export class LazyLoadTriggerComponent
   private _observer: IntersectionObserver | null = null;
 
   ngOnInit(): void {
-    this._observer = new IntersectionObserver(
-      this.observerCallback.bind(this),
-      {
-        threshold: 0.5,
-        rootMargin: `0px 0px ${this.marginBottom()}px 0px`,
-      }
-    );
+    this._observer = new IntersectionObserver(this.observerCallback.bind(this), {
+      threshold: 0.5,
+      rootMargin: `0px 0px ${this.marginBottom()}px 0px`,
+    });
   }
 
   ngAfterViewInit(): void {

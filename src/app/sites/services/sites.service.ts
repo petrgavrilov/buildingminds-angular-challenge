@@ -1,17 +1,9 @@
-import {
-  computed,
-  effect,
-  EffectRef,
-  inject,
-  Injectable,
-  signal,
-  Signal,
-  WritableSignal,
-} from '@angular/core';
-import { Site } from '../model/site.interface';
-import { TagsService } from '../../tags/services/tags.service';
-import { DataService } from '../../core/services/data.service';
-import { StorageService } from '../../core/services/storage.service';
+import { computed, effect, EffectRef, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { DataService } from '@app/core/services/data.service';
+import { StorageService } from '@app/core/services/storage.service';
+import { Site } from '@app/sites/model/site.interface';
+import { TagsService } from '@app/tags/services/tags.service';
+import { Observable, tap } from 'rxjs';
 
 interface SiteFilterData {
   siteType: string | null;
@@ -32,9 +24,7 @@ export class SitesService {
   private selectedTags: Signal<string[]> = this.tagsService.getSelectedTags();
   private siteType: WritableSignal<string | null> = signal<string | null>(null);
   private sites: WritableSignal<Site[]> = signal<Site[]>([]);
-  private siteTypes: Signal<string[]> = computed(() =>
-    this.extractTypes(this.sites())
-  );
+  private siteTypes: Signal<string[]> = computed(() => this.extractTypes(this.sites()));
 
   public filteredSites: Signal<Site[]> = computed(() => {
     const sites = this.sites();
@@ -54,19 +44,14 @@ export class SitesService {
   }
 
   private restoreFilters(): void {
-    const filters = this.storageService.getItem<SitesFilterStorageData>(
-      this.filtersKey
-    );
+    const filters = this.storageService.getItem<SitesFilterStorageData>(this.filtersKey);
     if (filters) {
       this.siteType.set(filters.siteType);
     }
   }
 
   private filterSites(sites: Site[], data: SiteFilterData): Site[] {
-    return [this.filterByTags, this.filterByType].reduce(
-      (filteredSites, filter) => filter(filteredSites, data),
-      sites
-    );
+    return [this.filterByTags, this.filterByType].reduce((filteredSites, filter) => filter(filteredSites, data), sites);
   }
 
   private extractTypes(sites: Site[]) {
@@ -109,7 +94,7 @@ export class SitesService {
     return computed(() => this.sites().length);
   }
 
-  public loadSites(): void {
-    this.dataService.getSites().subscribe((sites) => this.setSites(sites));
+  public loadSites(): Observable<Site[]> {
+    return this.dataService.getSites().pipe(tap((sites) => this.setSites(sites)));
   }
 }

@@ -1,8 +1,10 @@
-import { mkdirSync, existsSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+
 import { faker } from '@faker-js/faker';
-import { Building } from '../src/app/buildings/model/building.interface';
+
 import { BUILDING_TYPES, SITE_TYPES, TAG_POOL } from '../mock/constants';
+import { Building } from '../src/app/buildings/model/building.interface';
 import { Site } from '../src/app/sites/model/site.interface';
 
 const OUT_DIR = join(__dirname, '../mock/data');
@@ -11,11 +13,11 @@ if (!existsSync(OUT_DIR)) {
   mkdirSync(OUT_DIR, { recursive: true });
 }
 
-function generateTags(min: number = 3, max: number = 5): string[] {
+function generateTags(min = 3, max = 5): string[] {
   return faker.helpers.arrayElements(TAG_POOL, faker.number.int({ min, max }));
 }
 
-function generateBuildings(count: number = 100): Building[] {
+function generateBuildings(count = 100): Building[] {
   return Array.from({ length: count }, () => ({
     id: faker.string.nanoid(5),
     name: faker.company.name(),
@@ -24,7 +26,7 @@ function generateBuildings(count: number = 100): Building[] {
   }));
 }
 
-function generateSites(count: number = 100): Site[] {
+function generateSites(count = 100): Site[] {
   return Array.from({ length: count }, () => ({
     id: faker.string.nanoid(7),
     name: faker.location.city(),
@@ -34,12 +36,7 @@ function generateSites(count: number = 100): Site[] {
 }
 
 function extractTags(buildings: Building[], sites: Site[]): string[] {
-  return Array.from(
-    new Set([
-      ...buildings.flatMap((b) => b.tags),
-      ...sites.flatMap((s) => s.tags),
-    ])
-  );
+  return Array.from(new Set([...buildings.flatMap((b) => b.tags), ...sites.flatMap((s) => s.tags)]));
 }
 
 function writeMockData(fileName: string, data: unknown): void {
@@ -65,6 +62,7 @@ try {
   writeMockData('tags.json', tags);
 } catch (error) {
   console.error('❌ Error writing mock data to files:', error);
+  process.exit(1);
 }
 
 console.info('📦 mock data generated into', OUT_DIR);

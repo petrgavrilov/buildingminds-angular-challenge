@@ -1,8 +1,8 @@
-import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Building } from '@app/buildings/model/building.interface';
+import { Site } from '@app/sites/model/site.interface';
 import { Observable } from 'rxjs';
-import { Building } from '../../buildings/model/building.interface';
-import { Site } from '../../sites/model/site.interface';
 
 @Injectable({ providedIn: 'root' })
 export class DataService {

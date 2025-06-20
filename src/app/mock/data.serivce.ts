@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { DataService } from '../core/services/data.service';
-import { defer, delay, map, Observable, of } from 'rxjs';
-import { Site } from '../sites/model/site.interface';
-import { Building } from '../buildings/model/building.interface';
+import { Building } from '@app/buildings/model/building.interface';
+import { DataService } from '@app/core/services/data.service';
+import { Site } from '@app/sites/model/site.interface';
+import { defer, delay, map, Observable } from 'rxjs';
 
 @Injectable()
 export class MockDataService extends DataService {

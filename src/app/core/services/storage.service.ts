@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { STORAGE_GLOBAL_KEY } from '../tokens/storage';
+import { STORAGE_GLOBAL_KEY } from '@app/core/tokens/storage';
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
@@ -29,12 +29,13 @@ export class StorageService {
   }
 
   public setItem<T extends object>(key: string, value: T): void {
+    const storageKey = this.getKey(key);
+
     try {
-      const storageKey = this.getKey(key);
       const serializedValue = JSON.stringify(value);
       this.storage.setItem(storageKey, serializedValue);
     } catch (error) {
-      console.error(`Error setting item in storage with key "${key}":`, error);
+      console.error(`Error setting item in storage with key "${storageKey}":`, error);
     }
   }
 }
