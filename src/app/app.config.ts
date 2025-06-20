@@ -5,10 +5,9 @@ import { provideRouter } from '@angular/router';
 import { routes } from '@app/app.routes';
 import { DataService } from '@app/core/services/data.service';
 import { STORAGE_GLOBAL_KEY } from '@app/core/tokens/storage';
+import { MockDataService } from '@app/mock/data.serivce';
 import Aura from '@primeng/themes/aura';
 import { providePrimeNG } from 'primeng/config';
-
-import { MockDataService } from './mock/data.serivce';
 
 export const appConfig: ApplicationConfig = {
   providers: [
