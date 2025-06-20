@@ -1,0 +1,17 @@
+<div class="p-2 bg-white/75 rounded-lg">
+  @let tagsList = tags();
+
+  <div class="flex flex-wrap gap-1">
+    @if(tagsList.length === 0) {
+    <app-tags-skeleton></app-tags-skeleton>
+    } @else { @for(tag of tagsList; track tag) {
+    <p-tag
+      class="cursor-pointer"
+      [value]="tag"
+      [severity]="selectedTags().has(tag) ? '' : 'secondary'"
+      [rounded]="true"
+      (click)="onTagSelected(tag)"
+    />
+    } }
+  </div>
+</div>

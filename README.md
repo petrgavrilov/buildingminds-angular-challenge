@@ -1,59 +1,123 @@
-# BuildingmindsChallenge
+# BuildingMinds Angular Coding Challenge
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.15.
+## Objective
 
-## Development server
+Create a web app in Angular with two pages: `/buildings` and `/sites`, each displaying data with contextual and global tag filters. The app supports localStorage-based state persistence and lazy rendering for performance.
 
-To start a local development server, run:
+## Architecture Overview
+
+- **Feature Modules**: `buildings`, `sites`, and `tags` each encapsulate related pages, components, services, and models.
+- **Shared Core**:
+
+  - `DataService`: for loading data.
+  - `StorageService`: wraps `localStorage` with type safety and namespacing.
+  - `LayoutComponent` and `NavComponent`: reusable UI shell.
+  - `LazyLoadTriggerComponent`: handles infinite scroll logic.
+
+Each feature module has its own state service to encapsulate filtering and API logic.
+
+## Implementation Strategy
+
+### Filters
+
+- **Global Tag Filter**: Shared `TagsService` manages selected tags and persists them.
+- **Contextual Filters**: Each page (buildings/sites) has its own filter (buildingType/siteType).
+
+### Filter Logic
+
+- Each service uses an array of filter functions (e.g. `filterByTags`, `filterByType`) applied through a reducer.
+- Filters are persistent across refreshes using `localStorage`, managed via `StorageService`.
+
+### State Management
+
+- Each service encapsulates:
+
+  - Data loading (`loadBuildings()`, `loadSites()`)
+  - Filter state (`signal`s + `effect` to auto-save)
+  - Computed filtered result
+
+Services are signal-based, but structured to be easily migrated to `ngrx` or other state libraries.
+
+## Pages Summary
+
+### `/buildings`
+
+- Displays: `id`, `name`, `tags`, `buildingType`
+- Filters: Global `tags`, Page-specific `buildingType`
+- Components: `BuildingsComponent`, `BuildingsSkeletonComponent`
+
+### `/sites`
+
+- Displays: `id`, `name`, `tags`, `siteType`
+- Filters: Global `tags`, Page-specific `siteType`
+- Components: `SitesComponent`, `SitesSkeletonComponent`
+
+## State Persistence
+
+- Filter state (`tags`, `buildingType`, `siteType`) is saved in `localStorage` per page.
+- Automatically restored on app initialization via each feature's service.
+
+## Handling 10,000+ Entries
+
+- **Mock Data**: Generator script creates 10,000 entries for each entity.
+- **Lazy Rendering**: Table displays 50 items initially, loading 50 more each time user scrolls to the bottom.
+- **Implementation**: Simple scroll-trigger using `IntersectionObserver`.
+
+In a real-world app, pagination and server-side filtering would be used instead of full client-side storage.
+
+## Extending With Date Filters
+
+- Filter pipeline allows easy extension.
+- To add a date filter:
+
+  1. Add `date` to the filter data model.
+  2. Add `filterByDate()` function.
+  3. Append it to the filter chain in the service.
+  4. Add UI input component.
+
+## Setup Instructions
+
+1. Install dependencies:
 
 ```bash
-ng serve
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+2. Generate mock data:
 
 ```bash
-ng generate component component-name
+npm run generate:mock
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+3. Start dev server:
 
 ```bash
-ng generate --help
+npm start
 ```
 
-## Building
+## Tech Stack
 
-To build the project run:
+- Angular 19
+- Tailwind CSS + PrimeNG
 
-```bash
-ng build
+## 📁 Project Structure
+
+```
+src/app
+├── buildings
+├── sites
+├── tags
+├── core
+│   ├── services
+│   └── tokens
+└── ui
+    └── components
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Known Improvements
 
-## Running unit tests
+- Some duplication exists between buildings/sites services. I kept it to keep the code simple and easy to read. In real apps, these features often evolve differently anyway.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+- Shared filtering logic could be extracted, but I preferred clear separation for this challenge.
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Pagination and server-side filtering would be used in production. Here I used lazy rendering with mock data for simplicity.

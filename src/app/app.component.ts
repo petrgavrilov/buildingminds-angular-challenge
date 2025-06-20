@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { LayoutComponent } from './ui/components/layout/layout.component';
+import { NavComponent } from './ui/components/nav/nav.component';
+import { TagsComponent } from './tags/components/tags/tags.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  imports: [RouterOutlet, LayoutComponent, NavComponent, TagsComponent],
 })
-export class AppComponent {
-  title = 'buildingminds-challenge';
-}
+export class AppComponent {}

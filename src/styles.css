@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@plugin "tailwindcss-primeui";
+@import "primeicons/primeicons.css";
+
+html {
+  font-size: 14px;
+}

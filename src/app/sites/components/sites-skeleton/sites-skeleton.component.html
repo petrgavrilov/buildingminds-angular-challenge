@@ -1,0 +1,25 @@
+<div class="mb-4">
+  <p-skeleton width="196px" height="37px" borderRadius="6px" />
+</div>
+
+<p-table
+  [value]="[0, 1, 2, 3, 4, 5, 6, 7, 8]"
+  [tableStyle]="{ 'min-width': '50rem' }"
+>
+  <ng-template #header>
+    <tr>
+      <th style="width: 10%">ID</th>
+      <th style="width: 30%">Name</th>
+      <th style="width: 40%">Tags</th>
+      <th style="width: 20%">Type</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-product>
+    <tr>
+      <td><p-skeleton height="1.813rem" /></td>
+      <td><p-skeleton height="1.813rem" /></td>
+      <td><p-skeleton height="1.813rem" /></td>
+      <td><p-skeleton height="1.813rem" /></td>
+    </tr>
+  </ng-template>
+</p-table>
