@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
-import { TagsComponent } from './tags/components/tags/tags.component';
-import { LayoutComponent } from './ui/components/layout/layout.component';
-import { NavComponent } from './ui/components/nav/nav.component';
+import { TagsComponent } from '@app/tags/components/tags/tags.component';
+import { LayoutComponent } from '@app/ui/components/layout/layout.component';
+import { NavComponent } from '@app/ui/components/nav/nav.component';
 
 @Component({
   selector: 'app-root',
