@@ -25,7 +25,6 @@ export class BuildingsService {
   private buildingType: WritableSignal<string | null> = signal<string | null>(null);
   private buildings: WritableSignal<Building[]> = signal<Building[]>([]);
   private buildingTypes: Signal<string[]> = computed(() => this.extractTypes(this.buildings()));
-
   private filteredBuildings: Signal<Building[]> = computed(() => {
     const buildings = this.buildings();
     const buildingType = this.buildingType();
@@ -51,10 +50,8 @@ export class BuildingsService {
   }
 
   private filterBuildings(buildings: Building[], data: BuildingFilterData): Building[] {
-    return [this.filterByTags, this.filterByType].reduce(
-      (filteredBuildings, filter) => filter(filteredBuildings, data),
-      buildings
-    );
+    const filterFns: BuildingFilterFunction[] = [this.filterByTags, this.filterByType];
+    return filterFns.reduce((filteredBuildings, filter) => filter(filteredBuildings, data), buildings);
   }
 
   private extractTypes(buildings: Building[]) {

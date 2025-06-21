@@ -25,7 +25,6 @@ export class SitesService {
   private siteType: WritableSignal<string | null> = signal<string | null>(null);
   private sites: WritableSignal<Site[]> = signal<Site[]>([]);
   private siteTypes: Signal<string[]> = computed(() => this.extractTypes(this.sites()));
-
   public filteredSites: Signal<Site[]> = computed(() => {
     const sites = this.sites();
     const siteType = this.siteType();
@@ -51,7 +50,8 @@ export class SitesService {
   }
 
   private filterSites(sites: Site[], data: SiteFilterData): Site[] {
-    return [this.filterByTags, this.filterByType].reduce((filteredSites, filter) => filter(filteredSites, data), sites);
+    const filterFns: SiteFilterFunction[] = [this.filterByTags, this.filterByType];
+    return filterFns.reduce((filteredSites, filter) => filter(filteredSites, data), sites);
   }
 
   private extractTypes(sites: Site[]) {
