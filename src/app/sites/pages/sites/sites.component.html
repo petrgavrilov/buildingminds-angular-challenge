@@ -1,16 +1,19 @@
 <div class="pb-12">
-  @let total = totalRecords(); @if (total > 0) {
+  @if (totalRecords() > 0) {
+
   <div class="mb-4">
     <p-select
-      [(ngModel)]="siteType"
-      [options]="siteTypes()"
-      [showClear]="true"
       placeholder="Select site type"
       class="w-full md:w-56"
+      [ngModel]="siteType()"
+      [options]="siteTypes()"
+      [showClear]="true"
+      (onChange)="onSiteTypeChange($event)"
     />
   </div>
 
   @if(totalFiltered() > 0) {
+
   <p-table
     class="max-w-full"
     [value]="filteredSites() | slice : 0 : currentLimit()"
@@ -41,17 +44,23 @@
       </tr>
     </ng-template>
   </p-table>
+
   } @else {
+
   <div class="text-left text-gray-500 py-6">
     No sites found for the selected tags & type.
   </div>
+
   }
 
   <app-lazy-load-trigger
     [shouldTrigger]="currentLimit() < totalFiltered()"
     (trigger)="increaseLimit()"
   ></app-lazy-load-trigger>
+
   } @else {
+
   <app-sites-skeleton></app-sites-skeleton>
+
   }
 </div>

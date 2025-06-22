@@ -14,7 +14,7 @@ import { BuildingsSkeletonComponent } from '@app/buildings/components/buildings-
 import { Building } from '@app/buildings/model/building.interface';
 import { BuildingsService } from '@app/buildings/services/buildings.service';
 import { LazyLoadTriggerComponent } from '@app/ui/components/lazy-load-trigger/lazy-load-trigger.component';
-import { SelectModule } from 'primeng/select';
+import { SelectChangeEvent, SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 
@@ -38,10 +38,13 @@ export class BuildingsComponent {
   private buildingsService = inject(BuildingsService);
 
   public buildingTypes: Signal<string[]> = this.buildingsService.getBuildingTypes();
-  public buildingType: WritableSignal<string | null> = this.buildingsService.getBuildingType();
-  public filteredBuildings: Signal<Building[]> = this.buildingsService.getFilteredBuildings();
-  public totalRecords: Signal<number> = this.buildingsService.getTotalRecords();
-  public totalFiltered: Signal<number> = computed(() => this.filteredBuildings().length);
+  public buildingType: Signal<string | null> = computed(
+    () => this.buildingsService.entityFilters()?.buildingType || null
+  );
+
+  public filteredBuildings: Signal<Building[]> = this.buildingsService.getFilteredEntities();
+  public totalRecords: Signal<number> = this.buildingsService.getTotal();
+  public totalFiltered: Signal<number> = this.buildingsService.getTotalFiltered();
   public currentLimit: WritableSignal<number> = linkedSignal({
     source: this.filteredBuildings,
     computation: () => LIMIT_STEP,
@@ -49,11 +52,15 @@ export class BuildingsComponent {
 
   constructor() {
     if (this.totalRecords() === 0) {
-      this.buildingsService.loadBuildings().pipe(takeUntilDestroyed()).subscribe();
+      this.buildingsService.loadEntities().pipe(takeUntilDestroyed()).subscribe();
     }
   }
 
   public increaseLimit(): void {
     this.currentLimit.update((limit) => limit + LIMIT_STEP);
+  }
+
+  public onBuildingTypeChange(event: SelectChangeEvent): void {
+    this.buildingsService.setEntityFilters({ buildingType: event.value });
   }
 }

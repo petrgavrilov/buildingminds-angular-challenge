@@ -1,62 +1,27 @@
-import { computed, effect, EffectRef, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { computed, effect, inject, Injectable, Signal } from '@angular/core';
 import { Building } from '@app/buildings/model/building.interface';
 import { DataService } from '@app/core/services/data.service';
-import { StorageService } from '@app/core/services/storage.service';
+import { EntitiesService, EntityFilterFunction } from '@app/core/services/entities.service';
 import { TagsService } from '@app/tags/services/tags.service';
 import { Observable, tap } from 'rxjs';
 
-interface BuildingFilterData {
+interface BuildingFilters {
   buildingType: string | null;
+}
+
+interface BuildingExternalFilters {
   tags: string[];
 }
 
-type BuildingFilterStorageData = Omit<BuildingFilterData, 'tags'>;
-
-type BuildingFilterFunction = (buildings: Building[], data: BuildingFilterData) => Building[];
+type BuildingFilterFunction = EntityFilterFunction<Building, BuildingFilters, BuildingExternalFilters>;
 
 @Injectable({ providedIn: 'root' })
-export class BuildingsService {
+export class BuildingsService extends EntitiesService<Building, BuildingFilters, BuildingExternalFilters> {
   private dataService = inject(DataService);
   private tagsService = inject(TagsService);
-  private storageService = inject(StorageService);
-  private filtersKey = 'buildingFilters';
 
   private selectedTags: Signal<string[]> = this.tagsService.getSelectedTags();
-  private buildingType: WritableSignal<string | null> = signal<string | null>(null);
-  private buildings: WritableSignal<Building[]> = signal<Building[]>([]);
-  private buildingTypes: Signal<string[]> = computed(() => this.extractTypes(this.buildings()));
-  private filteredBuildings: Signal<Building[]> = computed(() => {
-    const buildings = this.buildings();
-    const buildingType = this.buildingType();
-    const tags = this.selectedTags();
-    return this.filterBuildings(buildings, { buildingType, tags });
-  });
-
-  private saveFilters: EffectRef = effect(() => {
-    this.storageService.setItem<BuildingFilterStorageData>(this.filtersKey, {
-      buildingType: this.buildingType(),
-    });
-  });
-
-  constructor() {
-    this.restoreFilters();
-  }
-
-  private restoreFilters(): void {
-    const filters = this.storageService.getItem<BuildingFilterStorageData>(this.filtersKey);
-    if (filters) {
-      this.buildingType.set(filters.buildingType);
-    }
-  }
-
-  private filterBuildings(buildings: Building[], data: BuildingFilterData): Building[] {
-    const filterFns: BuildingFilterFunction[] = [this.filterByTags, this.filterByType];
-    return filterFns.reduce((filteredBuildings, filter) => filter(filteredBuildings, data), buildings);
-  }
-
-  private extractTypes(buildings: Building[]) {
-    return Array.from(new Set(buildings.map((building) => building.buildingType)));
-  }
+  private buildingTypes: Signal<string[]> = computed(() => this.extractTypes(this.entities()));
 
   private filterByType: BuildingFilterFunction = (buildings, { buildingType }) => {
     if (!buildingType) {
@@ -65,7 +30,7 @@ export class BuildingsService {
     return buildings.filter((building) => building.buildingType === buildingType);
   };
 
-  private filterByTags: BuildingFilterFunction = (buildings, { tags }) => {
+  private filterByTags: BuildingFilterFunction = (buildings, _, { tags }) => {
     if (tags.length === 0) {
       return buildings;
     }
@@ -74,27 +39,28 @@ export class BuildingsService {
     });
   };
 
-  public setBuildings(buildings: Building[]): void {
-    this.buildings.set(buildings);
+  protected filterFunctions: BuildingFilterFunction[] = [this.filterByTags, this.filterByType];
+
+  constructor() {
+    super({
+      filtersStorageKey: 'buildingsFilters',
+    });
+
+    effect(() => {
+      const tags = this.selectedTags();
+      this.setExternalFilters({ tags });
+    });
+  }
+
+  private extractTypes(buildings: Building[]) {
+    return Array.from(new Set(buildings.map((building) => building.buildingType)));
+  }
+
+  public loadEntities(): Observable<Building[]> {
+    return this.dataService.getBuildings().pipe(tap((buildings) => this.setEntities(buildings)));
   }
 
   public getBuildingTypes(): Signal<string[]> {
     return computed(() => this.buildingTypes());
-  }
-
-  public getBuildingType(): WritableSignal<string | null> {
-    return this.buildingType;
-  }
-
-  public getFilteredBuildings(): Signal<Building[]> {
-    return this.filteredBuildings;
-  }
-
-  public getTotalRecords(): Signal<number> {
-    return computed(() => this.buildings().length);
-  }
-
-  public loadBuildings(): Observable<Building[]> {
-    return this.dataService.getBuildings().pipe(tap((buildings) => this.setBuildings(buildings)));
   }
 }

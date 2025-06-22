@@ -11,36 +11,55 @@ https://buildingminds-angular-challenge.vercel.app/
 ## Architecture Overview
 
 - **Feature Modules**: `buildings`, `sites`, and `tags` each encapsulate related pages, components, services, and models.
-- **Shared Core**:
+- **Core Services**:
 
-  - `DataService`: for loading data.
+  - `DataService`: for loading data from API or mock source.
   - `StorageService`: wraps `localStorage` with type safety and namespacing.
-  - `LayoutComponent` and `NavComponent`: reusable UI shell.
-  - `LazyLoadTriggerComponent`: handles infinite scroll logic.
+  - `EntitiesService`: a generic, reusable base class that handles entity loading, filtering, and persistence logic for both buildings and sites. It uses generics and filter pipelines to separate internal (page-specific) and external (global) filters.
 
-Each feature module has its own state service to encapsulate filtering and API logic.
+- **UI Components**:
+
+  - `LayoutComponent` and `NavComponent`: reusable layout shell and navigation bar.
+  - `LazyLoadTriggerComponent`: triggers rendering of additional data when the user scrolls near the bottom of the list.
+
+Each feature module has its own state service, extending `EntitiesService`, to encapsulate filtering and API logic in a reusable and scalable way.
+
+## Project Structure
+
+```
+src/app
+├── buildings
+├── sites
+├── tags
+├── core
+│   ├── services
+│   └── tokens
+└── ui
+    └── components
+```
 
 ## Implementation Strategy
 
 ### Filters
 
-- **Global Tag Filter**: Shared `TagsService` manages selected tags and persists them.
-- **Contextual Filters**: Each page (buildings/sites) has its own filter (buildingType/siteType).
+- **Global Tag Filter**: Managed by a shared `TagsService`, which tracks selected tags and persists them to local storage.
+- **Contextual Filters**: Each feature defines its own internal filters (e.g., `buildingType`, `siteType`) and provides them to a reusable filter pipeline.
 
 ### Filter Logic
 
-- Each service uses an array of filter functions (e.g. `filterByTags`, `filterByType`) applied through a reducer.
-- Filters are persistent across refreshes using `localStorage`, managed via `StorageService`.
+- All filtering logic is centralized in the shared `EntitiesService`. Each feature provides its own filter functions (e.g. `filterByTags`, `filterByType`) which are composed and executed in sequence.
+- This service separates internal filters from external ones (like tags), enabling modular logic.
 
 ### State Management
 
-- Each service encapsulates:
+- Both buildings and sites services now extend `EntitiesService`, which handles:
 
-  - Data loading (`loadBuildings()`, `loadSites()`)
-  - Filter state (`signal`s + `effect` to auto-save)
-  - Computed filtered result
+  - Reactive state (`signal`s and `effect`s)
+  - Local storage persistence per entity type
+  - Filter logic encapsulation and computation
+  - Data loading (`loadEntities()`)
 
-Services are signal-based, but structured to be easily migrated to `ngrx` or other state libraries.
+This abstraction simplifies feature modules and prepares the codebase for potential migration to more advanced state tools like `ngrx` or signals-based stores.
 
 ## Pages Summary
 
@@ -48,26 +67,25 @@ Services are signal-based, but structured to be easily migrated to `ngrx` or oth
 
 - Displays: `id`, `name`, `tags`, `buildingType`
 - Filters: Global `tags`, Page-specific `buildingType`
-- Components: `BuildingsComponent`, `BuildingsSkeletonComponent`
 
 ### `/sites`
 
 - Displays: `id`, `name`, `tags`, `siteType`
 - Filters: Global `tags`, Page-specific `siteType`
-- Components: `SitesComponent`, `SitesSkeletonComponent`
 
 ## State Persistence
 
-- Filter state (`tags`, `buildingType`, `siteType`) is saved in `localStorage` per page.
-- Automatically restored on app initialization via each feature's service.
+- Filter state is saved in `localStorage` under three separate keys: one for tags, one for building filters, and one for site filters.
+- Tag filters are managed globally via `TagsService`, while building and site filters are stored per entity type.
+- All filters are persisted on change and restored automatically on page load.
 
 ## Handling 10,000+ Entries
 
-- **Mock Data**: Generator script creates 10,000 entries for each entity.
-- **Lazy Rendering**: Table displays 50 items initially, loading 50 more each time user scrolls to the bottom.
-- **Implementation**: Simple scroll-trigger using `IntersectionObserver`.
+- **Mock Data**: A generator script creates 10,000 mock entries for both buildings and sites.
+- **Lazy Rendering**: Initially renders 50 items, with 50 more added each time the user scrolls to the bottom.
+- **Implementation**: Uses a simple scroll-trigger based on `IntersectionObserver` to handle incremental rendering.
 
-In a real-world app, pagination and server-side filtering would be used instead of full client-side storage.
+In production, this would typically be replaced by paginated API requests and server-side filtering.
 
 ## Extending With Date Filters
 
@@ -78,6 +96,7 @@ In a real-world app, pagination and server-side filtering would be used instead 
   2. Add `filterByDate()` function.
   3. Append it to the filter chain in the service.
   4. Add UI input component.
+  5. The rest (filtering + localStorage) works automatically.
 
 ## Setup Instructions
 
@@ -103,25 +122,3 @@ npm start
 
 - Angular 19
 - Tailwind CSS + PrimeNG
-
-## Project Structure
-
-```
-src/app
-├── buildings
-├── sites
-├── tags
-├── core
-│   ├── services
-│   └── tokens
-└── ui
-    └── components
-```
-
-## Known Improvements
-
-- Some duplication exists between buildings/sites services. I kept it to keep the code simple and easy to read. In real apps, these features often evolve differently anyway.
-
-- Shared filtering logic could be extracted, but I preferred clear separation for this challenge.
-
-- Pagination and server-side filtering would be used in production. Here I used lazy rendering with mock data for simplicity.
